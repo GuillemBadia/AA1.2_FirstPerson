@@ -16,4 +16,5 @@ public class CamaraVertical : MonoBehaviour
 
         transform.localEulerAngles += new Vector3(-Mouse.current.delta.value.y, 0, 0) * rotationSpeed;
     }
+
 }

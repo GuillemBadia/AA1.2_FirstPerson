@@ -9,10 +9,6 @@ public class CamaraHorizontal : MonoBehaviour
     void Update()
     {
 
-        Debug.Log(Mouse.current.delta.value);
-        Debug.Log(Mouse.current.position.value);
-
-
         transform.localEulerAngles += new Vector3(0, Mouse.current.delta.value.x, 0) * rotationSpeed;
     }
 
