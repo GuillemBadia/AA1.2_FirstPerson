@@ -27,11 +27,18 @@ public class FPSMovement : MonoBehaviour
 
     void Update()
     {
-        Vector3 dir = inputs.Player.Move.ReadValue<Vector2>();
+         Vector3 dir = inputs.Player.Move.ReadValue<Vector2>();
 
 
         dir.z = dir.y;
         dir.y = 0;
+
+
+        if (dir.x < 0)
+        {
+
+        }
+
 
         dir = transform.TransformDirection(dir);
 
@@ -48,6 +55,9 @@ public class FPSMovement : MonoBehaviour
 
             if (dir != Vector3.zero)
             {
+                Debug.Log(dir);
+
+
                 Vector3 movimiento = dir * speed * Time.deltaTime;
                 rb.MovePosition(rb.position + movimiento);
             }

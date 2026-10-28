@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,12 +13,13 @@ public class PickUp : MonoBehaviour
 
     GameObject objetoCogido;
     Rigidbody rbObjeto;
-    public float distanciaOriginal;
 
+    public float distanciaOriginal;
     public float DistanciaMin;
     public float DistanciaMax;
 
-    
+    public float fuerzaMovimiento = 20f;
+    public float amortiguacion = 5f;
 
     void Update()
     {
@@ -26,54 +28,52 @@ public class PickUp : MonoBehaviour
 
         Debug.DrawRay(transform.position, transform.forward * distance, Color.red);
 
-        if (Physics.Raycast(transform.position, transform.forward, out hit, distance, Pickup))
+        if (objetoCogido == null && Mouse.current.leftButton.wasPressedThisFrame && Physics.Raycast(transform.position, transform.forward, out hit, distance, Pickup))
         {
             Debug.DrawRay(transform.position, transform.forward * hit.distance, Color.green);
 
             hitPosition = hit.point;
 
-         
-            if (Mouse.current.leftButton.wasPressedThisFrame)
-            {
-                objetoCogido = hit.collider.gameObject;
-                rbObjeto = objetoCogido.GetComponent<Rigidbody>();
+            objetoCogido = hit.collider.gameObject;
+            rbObjeto = objetoCogido.GetComponent<Rigidbody>();
 
-                distanciaOriginal = hit.distance;
+            distanciaOriginal = hit.distance;
+            rbObjeto.isKinematic = false;
+            rbObjeto.useGravity = false;
 
-                rbObjeto.isKinematic = true;
-                
-            }
         }
 
         if (objetoCogido != null)
         {
-            objetoCogido.transform.position = transform.position + transform.forward * distanciaOriginal;
-
-
-            distanciaOriginal += Mouse.current.scroll.ReadValue().y;
-            if (distanciaOriginal < DistanciaMin)
-            {
-                distanciaOriginal = DistanciaMin;
-            }
-            if (distanciaOriginal > DistanciaMax)
-            {
-                distanciaOriginal = DistanciaMax;
-            }
-
-
+            distanciaOriginal += Mouse.current.scroll.ReadValue().y * 0.5f;
+            distanciaOriginal = Mathf.Clamp(distanciaOriginal, DistanciaMin, DistanciaMax);
 
             if (Mouse.current.leftButton.wasReleasedThisFrame)
             {
-                objetoCogido = null;
-
-
-                rbObjeto.isKinematic = false;
-                
-                rbObjeto = null;
-
-
+                SoltarObjeto();
             }
         }
+    }
+
+    void FixedUpdate()
+    {
+        if (objetoCogido == null || rbObjeto == null) return;
+
+        Vector3 posicionObjetivo = transform.position + transform.forward * distanciaOriginal;
+
+        Vector3 diferencia = posicionObjetivo - rbObjeto.position;
+
+        Vector3 fuerza = diferencia * fuerzaMovimiento - rbObjeto.linearVelocity * amortiguacion;
+
+        rbObjeto.AddForce(fuerza, ForceMode.Acceleration);
+    }
+
+    void SoltarObjeto()
+    {
+        rbObjeto.useGravity = true;
+
+        objetoCogido = null;
+        rbObjeto = null;
     }
 
     private void OnDrawGizmosSelected()
