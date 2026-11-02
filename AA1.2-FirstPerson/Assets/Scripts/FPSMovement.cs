@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -14,8 +15,7 @@ public class FPSMovement : MonoBehaviour
     public float fuerzaSalto = 7f;
 
     Vector3 hitPosition;
-    bool enSuelo;
-
+    bool Grounded;
 
     void Start()
     {
@@ -27,18 +27,13 @@ public class FPSMovement : MonoBehaviour
 
     void Update()
     {
-         Vector3 dir = inputs.Player.Move.ReadValue<Vector2>();
+        Vector2 movimientoInput = inputs.Player.Move.ReadValue<Vector2>();
 
+        Vector3 dir = new Vector3(movimientoInput.x, 0, movimientoInput.y);
 
-        dir.z = dir.y;
-        dir.y = 0;
+        dir = Vector3.ClampMagnitude(dir, 1f);
 
-
-        if (dir.x < 0)
-        {
-
-        }
-
+        Vector3 dirLocal = dir;
 
         dir = transform.TransformDirection(dir);
 
@@ -46,37 +41,64 @@ public class FPSMovement : MonoBehaviour
 
         Debug.DrawRay(transform.position, -transform.up * distance, Color.red);
 
-        enSuelo = Physics.Raycast(transform.position, -transform.up, out hit, distance);
+        Grounded = Physics.Raycast(transform.position, -transform.up, out hit, distance);
 
-        if (enSuelo)
+        float multiplicadorVelocidad = 1f;
+
+ 
+        if (dirLocal.z < 0)
+        {
+            multiplicadorVelocidad = 0.5f;
+        }
+        else if (dirLocal.z == 0 && dirLocal.x != 0)
+        {
+            multiplicadorVelocidad = 0.75f;
+        }
+        else if (dirLocal.z > 0)
+        {
+            multiplicadorVelocidad = 1f;
+        }
+
+        if (!Grounded)
+        {
+            multiplicadorVelocidad *= 0.5f;
+        }
+
+
+        if (Grounded && dirLocal.z > 0 && Keyboard.current != null &&
+            (Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed))
+        {
+            multiplicadorVelocidad *= 2f;
+        }
+
+
+        if (Grounded)
         {
             Debug.DrawRay(transform.position, -transform.up * hit.distance, Color.green);
             hitPosition = hit.point;
-
-            if (dir != Vector3.zero)
-            {
-                Debug.Log(dir);
-
-
-                Vector3 movimiento = dir * speed * Time.deltaTime;
-                rb.MovePosition(rb.position + movimiento);
-            }
-
-            if (inputs.Player.Jump.WasPressedThisFrame())
-            {
-                Jump();
-            }
         }
         else
         {
-            hitPosition = transform.position - -transform.up * distance;
+            hitPosition = transform.position + transform.up * distance;
+        }
+
+        if (dir != Vector3.zero)
+        {
+            Vector3 movimiento = dir * speed * multiplicadorVelocidad * Time.deltaTime;
+
+            rb.MovePosition(rb.position + movimiento);
+        }
+
+
+        if (Grounded && inputs.Player.Jump.WasPressedThisFrame())
+        {
+            Jump();
         }
     }
 
     private void Jump()
     {
         rb.AddForce(Vector3.up * fuerzaSalto, ForceMode.Impulse);
-
     }
 
     private void OnDrawGizmosSelected()

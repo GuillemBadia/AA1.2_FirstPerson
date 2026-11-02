@@ -38,7 +38,7 @@ public class PickUp : MonoBehaviour
             rbObjeto = objetoCogido.GetComponent<Rigidbody>();
 
             distanciaOriginal = hit.distance;
-            rbObjeto.isKinematic = false;
+
             rbObjeto.useGravity = false;
 
         }

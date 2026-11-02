@@ -31,10 +31,6 @@ public class CamaraVertical : MonoBehaviour
 
         Vector3 rotacionActual = transform.localRotation.eulerAngles;
 
-        transform.localRotation = Quaternion.Euler(
-            rotacion,
-            rotacionActual.y,
-            rotacionActual.z
-        );
+        transform.localRotation = Quaternion.Euler(rotacion, rotacionActual.y, rotacionActual.z);
     }
 }
